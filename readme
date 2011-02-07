@@ -1,0 +1,6 @@
+Serial Driver for Peel street lantern
+
+This sketch is modified from the TLC5930MUX matrix example.  Modified to use shift registers and simple serial interface.
+
+
+
