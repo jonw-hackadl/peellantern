@@ -1,19 +1,13 @@
 /*
-    Analog 0-2 (PORTC) is hooked to a 3:8 line decoder (74LS138) which pull the
-    Base of a PNP darlington (MPSA63) low through a 10k resistor for each row.
-    +5V is connected to the Emitter of the PNP's, and all the anodes (+) of the
-    leds for each row are connected to the Collector.
+    This modification of the Matrix example program is modified to use a shift register 
+    for row selection.  This register is connected to pins A0 and A5 of the arduino
+
+    -Joanthan Wheare 2011
     
-    Currently I'm trying to fix timing issues by putting some D-type positive
-    edge triggered latches between PORTC and the 3:8 line decoder, clocked on
-    the rising edge of XLAT, but this doesn't seem to help.  I'm bringing the
-    circuit in to the logic analyzer this weekend to see exactly when the ISR
-    runs and how long it takes to shift in the GS data.
-    
-    Alex Leone, 2009-04-30
+    based on an earlier program by Alex Leone, 2009-04-30
 */
 
-#define  NUM_TLCS  1
+#define  NUM_TLCS  8
 #define  NUM_ROWS  8
 #include "Tlc5940Mux.h"
 #define data 14
@@ -84,6 +78,16 @@ void loop()
 
     TlcMux_set(col, 1, 4095);
     TlcMux_set(7-col, 2, 4095);
+    TlcMux_set(col, 17, 4095);
+    TlcMux_set(7-col, 18, 4095);
+    TlcMux_set(col, 33, 4095);
+    TlcMux_set(7-col, 34, 4095);
+    TlcMux_set(col, 49, 4095);
+    TlcMux_set(7-col, 50, 4095);
+    TlcMux_set(col, 65, 4095);
+    TlcMux_set(7-col, 66, 4095);
+    TlcMux_set(col, 81, 4095);
+    TlcMux_set(7-col, 82, 4095);
     delay(100);
   }
   TlcMux_clear();
@@ -99,6 +103,16 @@ void loop()
     TlcMux_clear();
     TlcMux_set(7-col, 10, 4095);
     TlcMux_set(col, 11, 4095);
+    TlcMux_set(7-col, 26, 4095);   
+    TlcMux_set(col, 27, 4095);
+    TlcMux_set(7-col, 42, 4095);
+    TlcMux_set(col, 43, 4095);
+    TlcMux_set(7-col, 58, 4095);
+    TlcMux_set(col, 59, 4095);
+    TlcMux_set(7-col, 74, 4095);
+    TlcMux_set(col, 75, 4095);
+    TlcMux_set(7-col, 90, 4095);
+    TlcMux_set(col, 91, 4095);
     delay(100);
   }
   TlcMux_clear();
