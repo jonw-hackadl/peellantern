@@ -7,15 +7,15 @@
     based on an earlier program by Alex Leone, 2009-04-30
 */
 
-#define  NUM_TLCS  8
+#define  NUM_TLCS  3
 #define  NUM_ROWS  8
 #include "Tlc5940Mux.h"
-#define data 14
-#define clock 19
+
+#define data A0
+#define clock A3
 
 volatile uint8_t isShifting;
 uint8_t shiftRow=0;
-uint8_t trueRow=0;
 
 ISR(TIMER1_OVF_vect)
 {
@@ -27,35 +27,25 @@ ISR(TIMER1_OVF_vect)
     if (shiftRow >= NUM_ROWS) {
       shiftRow = 0;
     }
-    if (shiftRow>4)
-    {
-      trueRow=shiftRow-4;
-    }
-    else
-    {
-      trueRow=shiftRow+4;
-    }
-    //DDRC = DDRC | B10000100;
 
-    for (int i=1;i<9;i++)
+    for (int i=0;i<8;i++)
     {
      
-      if(i==trueRow)
+      if(i==shiftRow)
       {
-        //PORTC &= ~_BV(PORTC0);
-        PORTC =B00100000;
+        digitalWrite(data,LOW);
       }
       else
       {
-        //PORTC |= _BV(PORTC0);
-        PORTC =B00100001;
+        digitalWrite(data,HIGH);
       }  
-      PORTC &= ~_BV(PORTC5);
-      PORTC |= _BV(PORTC5);
+      // pulse clock
+      digitalWrite(clock,HIGH);
+      digitalWrite(clock,LOW);
+      
+      
     }
     TlcMux_shiftRow(shiftRow++);
-    /*PORTC = shiftRow++;*/
-    //shiftRow++;
     enable_XLAT_pulses();
     isShifting = 0;
   }
@@ -63,66 +53,67 @@ ISR(TIMER1_OVF_vect)
 
 void setup()
 {
-  DDRC |= _BV(PC0) | _BV(PC1) | _BV(PC5);
-  TlcMux_init();
     
   pinMode(clock, OUTPUT); // make the clock pin an output
   pinMode(data , OUTPUT); // make the data pin an output
+
+  TlcMux_init();
+
 }
 
-uint8_t color;
+int BLUE=0;
+int GREEN=1;
+int RED=2;
+
+void setPixel(int column, int row, int intensity, int colour) {
+  TlcMux_set(row, column*3+colour, intensity);
+}
+
+void setRGBPixel(int column, int row, int red, int green, int blue) {
+  setPixel(column,row,blue,BLUE);
+  setPixel(column,row,green,GREEN);
+  setPixel(column,row,red,RED);
+}
+
+void rows(int colour, int frameDelay) {
+  int x,y;
+  for (x = 0; x < 16; x++) {
+    TlcMux_clear();
+    for (y = 0; y < 8; y++) {
+      setPixel(x, y, 4095, colour);
+    }
+    delay(frameDelay);  
+  }
+}
+
+void columns(int colour, int frameDelay) {
+  int x,y;
+  for (y = 0; y < 8; y++) {
+    TlcMux_clear();
+    for (x = 0; x < 16; x++) {
+      setPixel(x, y, 4095, colour);
+    }
+    delay(frameDelay);  
+  }  
+}
+
+void allOn(int colour) {
+  int x,y;
+  TlcMux_clear();
+  for (x = 0; x < 16; x++) {
+    for (y = 0; y < 8; y++) {
+      setPixel(x, y, 4095, colour);
+    }
+  }
+}
+
 void loop()
 {
-    for (uint8_t col = 0; col < 8; col++) {
-    TlcMux_clear();
-
-    TlcMux_set(col, 1, 4095);
-    TlcMux_set(7-col, 2, 4095);
-    TlcMux_set(col, 17, 4095);
-    TlcMux_set(7-col, 18, 4095);
-    TlcMux_set(col, 33, 4095);
-    TlcMux_set(7-col, 34, 4095);
-    TlcMux_set(col, 49, 4095);
-    TlcMux_set(7-col, 50, 4095);
-    TlcMux_set(col, 65, 4095);
-    TlcMux_set(7-col, 66, 4095);
-    TlcMux_set(col, 81, 4095);
-    TlcMux_set(7-col, 82, 4095);
-    delay(100);
+  for(int colour=0;colour<3;colour++) {
+    rows(colour,100);
+    columns(colour,100);
+    
+    allOn(colour);
+    delay(1000);  
   }
-  TlcMux_clear();
-  TlcMux_set(7, 4, 4095);
-  TlcMux_set(0, 5, 4095);
-  delay(100);
-  TlcMux_clear();
-  TlcMux_set(0, 8, 4095);
-  TlcMux_set(7, 7, 4095);
-  delay(100);  
-
-  for (uint8_t col = 0; col < 8; col++) {
-    TlcMux_clear();
-    TlcMux_set(7-col, 10, 4095);
-    TlcMux_set(col, 11, 4095);
-    TlcMux_set(7-col, 26, 4095);   
-    TlcMux_set(col, 27, 4095);
-    TlcMux_set(7-col, 42, 4095);
-    TlcMux_set(col, 43, 4095);
-    TlcMux_set(7-col, 58, 4095);
-    TlcMux_set(col, 59, 4095);
-    TlcMux_set(7-col, 74, 4095);
-    TlcMux_set(col, 75, 4095);
-    TlcMux_set(7-col, 90, 4095);
-    TlcMux_set(col, 91, 4095);
-    delay(100);
-  }
-  TlcMux_clear();
-  TlcMux_set(7, 8, 4095);
-  TlcMux_set(0, 7, 4095);
-  delay(100);
-  TlcMux_clear();
-  TlcMux_set(7, 5, 4095);
-  TlcMux_set(0, 4, 4095);
-  delay(100);  
-
-  
 }
